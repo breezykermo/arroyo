@@ -40,6 +40,8 @@ services:
       - ./:/home/src
       - cargo-cache:/home/src/.cargo
     command: ["cargo", "run", "--bin", "arroyo-controller"]
+    profiles:
+      - donotstart
 
   arroyo-api:
     network_mode: host
@@ -53,6 +55,8 @@ services:
       - ./:/home/src
       - cargo-cache:/home/src/.cargo
     command: ["cargo", "run", "--bin", "arroyo-api"]
+    profiles:
+      - donotstart
 
   arroyo-compiler-service:
     network_mode: host
@@ -66,6 +70,8 @@ services:
       - ./:/home/src
       - cargo-cache:/home/src/.cargo
     command: ["cargo", "run", "--bin", "arroyo-compiler-service", "--", "start"]
+    profiles:
+      - donotstart
     # TODO create a healthcheck so that both arroyo-api and arroyo-controller can get out of the way
 
 
