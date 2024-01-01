@@ -14,7 +14,7 @@ services:
       interval: 10s
       retries: 5
 
-  refinery:
+  postgres-migrations:
     network_mode: host
     build:
       context: .
@@ -26,4 +26,51 @@ services:
         condition: service_healthy
     command: ["refinery", "migrate", "-c", "/tmp/refinery.toml", "-p", "/tmp/migrations"]
 
+  arroyo-controller:
+    network_mode: host
+    build:
+      context: .
+      dockerfile: ./docker/dev/main.Dockerfile 
+    working_dir: /home/src
+    depends_on:
+      - arroyo-compiler-service
+    environment:
+      - REMOTE_COMPILER_ENDPOINT=http://localhost:9000
+    volumes:
+      - ./:/home/src
+      - cargo-cache:/home/src/.cargo
+    command: ["cargo", "run", "--bin", "arroyo-controller"]
 
+  arroyo-api:
+    network_mode: host
+    build:
+      context: .
+      dockerfile: ./docker/dev/main.Dockerfile 
+    working_dir: /home/src
+    depends_on:
+      - arroyo-compiler-service
+    volumes:
+      - ./:/home/src
+      - cargo-cache:/home/src/.cargo
+    command: ["cargo", "run", "--bin", "arroyo-api"]
+
+  arroyo-compiler-service:
+    network_mode: host
+    build:
+      context: .
+      dockerfile: ./docker/dev/main.Dockerfile 
+    working_dir: /home/src
+    environment:
+      - ARTIFACT_URL=file://home/artifacts
+    volumes:
+      - ./:/home/src
+      - cargo-cache:/home/src/.cargo
+    command: ["cargo", "run", "--bin", "arroyo-compiler-service", "--", "start"]
+    # TODO create a healthcheck so that both arroyo-api and arroyo-controller can get out of the way
+
+
+  # frontend:
+  #   network_mode: host
+
+volumes:
+  cargo-cache:
