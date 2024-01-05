@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis-cli:
+    image: redis
+    network_mode: host
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        redis-cli -h localhost -p 6379 ACL SETUSER user1 on \>pass1  +@all
+        redis-cli -h localhost -p 6379 ACL LIST
